@@ -218,8 +218,8 @@
 		                        ROUND(SUM(CTY_GAS_GRGS_DSAMT)) as CTY_GAS_GRGS_DSAMT,
 		                        ROUND(SUM(SUM_GRGS_DSAMT)) as SUM_GRGS_DSAMT 
 		                    FROM daejeon_energy1 a
-		                    WHERE STNDD_YR = '2022'
-		                    AND a.SGNG_CD = '30170'
+		                    WHERE STNDD_YR = #{stnddYr}
+		                    AND a.SGNG_CD = #{sgngCd}
 		                    GROUP BY STNDD_YR, USE_MM, a.SGNG_CD, a.STDG_CD
 		                    ORDER BY STNDD_YR, TO_NUMBER(USE_MM), SGNG_CD
 		                    )
@@ -235,9 +235,9 @@
 		                ROUND(SUM(CTY_GAS_GRGS_DSAMT)) as CTY_GAS_GRGS_DSAMT,
 		                ROUND(SUM(SUM_GRGS_DSAMT)) as SUM_GRGS_DSAMT
 		            FROM daejeon_energy1 a
-		            WHERE STNDD_YR = '2022'
-		            AND a.SGNG_CD = '30170'
-		            AND a.STDG_CD = '11200'
+		            WHERE STNDD_YR = #{stnddYr}
+		            AND a.SGNG_CD = #{sgngCd}
+		            AND a.STDG_CD = #{stdgCd}
 		            GROUP BY STNDD_YR, USE_MM, a.SGNG_CD, STDG_CD
 		            ORDER BY STNDD_YR, TO_NUMBER(USE_MM), SGNG_CD
 		        ) bb
