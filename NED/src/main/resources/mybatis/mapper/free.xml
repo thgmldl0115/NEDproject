@@ -1,0 +1,259 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="DJEnergy.proj.kr.dashboard.dao.IDashBoardDAO">
+	
+	<select id="getAllData" parameterType="int"  resultType="DashBoardVO" >
+			SELECT 
+			    STNDD_YR,
+			    USE_MM,
+			    CEIL(SUM(ELRW_USQNT)/1000) as ELRW_USQNT,  
+			    CEIL(SUM(CTY_GAS_USQNT)/1000) as CTY_GAS_USQNT,
+			    CEIL(SUM(SUM_NRG_USQNT)/1000) as SUM_NRG_USQNT
+			FROM daejeon_energy1
+			WHERE STNDD_YR = #{year}
+			GROUP BY STNDD_YR, USE_MM
+			ORDER BY STNDD_YR, TO_NUMBER(USE_MM)
+	</select>
+	
+	<select id="getYr" resultType="DashBoardVO">
+		SELECT distinct stndd_yr
+		FROM daejeon_energy1
+		ORDER BY 1 DESC
+	</select>
+	
+	<select id="getDong" parameterType="string" resultType="DashBoardVO">
+		SELECT distinct stdg_nm, STDG_CD
+		FROM sgng_stdg_nm
+		WHERE sgng_cd=#{sgngCd}
+	</select>
+	
+	<select id="getGuUsqnt" parameterType="DashBoardVO" resultType="AvgDataVO">
+		
+		SELECT 
+		    bb.STNDD_YR,
+		    bb.USE_MM,
+		    ELRW_USQNT_avg,
+		    ELRW_USQNT,
+		    CTY_GAS_USQNT_avg,
+		    CTY_GAS_USQNT,
+		    SUM_NRG_USQNT_avg,
+		    SUM_NRG_USQNT
+		FROM (
+		            SELECT
+		                STNDD_YR,
+		                USE_MM,
+		                CEIL(AVG(ELRW_USQNT)/1000) as ELRW_USQNT_avg,  
+		                CEIL(AVG(CTY_GAS_USQNT)/1000) as CTY_GAS_USQNT_avg,
+		                CEIL(AVG(SUM_NRG_USQNT)/1000) as SUM_NRG_USQNT_avg 
+		            FROM(
+		                    SELECT 
+		                        STNDD_YR,
+		                        USE_MM,
+		                        a.SGNG_CD,
+		                        ROUND(SUM(ELRW_USQNT)) as ELRW_USQNT,  
+		                        ROUND(SUM(CTY_GAS_USQNT)) as CTY_GAS_USQNT,
+		                        ROUND(SUM(SUM_NRG_USQNT)) as SUM_NRG_USQNT 
+		                    FROM daejeon_energy1 a
+		                    WHERE STNDD_YR = #{stnddYr}
+		                    GROUP BY STNDD_YR, USE_MM, a.SGNG_CD
+		                    ORDER BY STNDD_YR, TO_NUMBER(USE_MM), SGNG_CD
+		                    )
+		            GROUP BY STNDD_YR, USE_MM
+		            ORDER BY STNDD_YR, TO_NUMBER(USE_MM)
+		        ) aa, (
+		            SELECT 
+		                STNDD_YR,
+		                USE_MM,
+		                a.SGNG_CD,
+		                CEIL(SUM(ELRW_USQNT)/1000) as ELRW_USQNT,  
+		                CEIL(SUM(CTY_GAS_USQNT)/1000) as CTY_GAS_USQNT,
+		                CEIL(SUM(SUM_NRG_USQNT)/1000) as SUM_NRG_USQNT 
+		            FROM daejeon_energy1 a
+		            WHERE STNDD_YR = #{stnddYr}
+		            AND a.SGNG_CD = #{sgngCd}
+		            GROUP BY STNDD_YR, USE_MM, a.SGNG_CD
+		            ORDER BY STNDD_YR, TO_NUMBER(USE_MM), SGNG_CD
+		        ) bb
+		WHERE aa.USE_MM = bb.USE_MM
+		
+	</select>
+	
+	<select id="getGuDsamt" parameterType="DashBoardVO" resultType="AvgDataVO">
+	
+		SELECT 
+		    bb.STNDD_YR,
+		    bb.USE_MM,
+		    ELRW_GRGS_DSAMT_avg,
+		    ELRW_GRGS_DSAMT,
+		    CTY_GAS_GRGS_DSAMT_avg,
+		    CTY_GAS_GRGS_DSAMT,
+		    SUM_GRGS_DSAMT_avg,
+		    SUM_GRGS_DSAMT
+		FROM (
+		            SELECT
+		                STNDD_YR,
+		                USE_MM,
+		                ROUND(AVG(ELRW_GRGS_DSAMT)) as ELRW_GRGS_DSAMT_avg,  
+		                ROUND(AVG(CTY_GAS_GRGS_DSAMT)) as CTY_GAS_GRGS_DSAMT_avg,
+		                ROUND(AVG(SUM_GRGS_DSAMT)) as SUM_GRGS_DSAMT_avg 
+		            FROM(
+		                    SELECT 
+		                        STNDD_YR,
+		                        USE_MM,
+		                        a.SGNG_CD,
+		                        ROUND(SUM(ELRW_GRGS_DSAMT)) as ELRW_GRGS_DSAMT,
+		                        ROUND(SUM(CTY_GAS_GRGS_DSAMT)) as CTY_GAS_GRGS_DSAMT,
+		                        ROUND(SUM(SUM_GRGS_DSAMT)) as SUM_GRGS_DSAMT
+		                    FROM daejeon_energy1 a
+		                    WHERE STNDD_YR = #{stnddYr}
+		                    GROUP BY STNDD_YR, USE_MM, a.SGNG_CD
+		                    ORDER BY STNDD_YR, TO_NUMBER(USE_MM), SGNG_CD
+		                    )
+		            GROUP BY STNDD_YR, USE_MM
+		            ORDER BY STNDD_YR, TO_NUMBER(USE_MM)
+		        ) aa, (
+		            SELECT 
+		                STNDD_YR,
+		                USE_MM,
+		                a.SGNG_CD,
+		                ROUND(SUM(ELRW_GRGS_DSAMT)) as ELRW_GRGS_DSAMT,
+		                ROUND(SUM(CTY_GAS_GRGS_DSAMT)) as CTY_GAS_GRGS_DSAMT,
+		                ROUND(SUM(SUM_GRGS_DSAMT)) as SUM_GRGS_DSAMT
+		            FROM daejeon_energy1 a
+		            WHERE STNDD_YR = #{stnddYr}
+		            AND a.SGNG_CD = #{sgngCd}
+		            GROUP BY STNDD_YR, USE_MM, a.SGNG_CD
+		            ORDER BY STNDD_YR, TO_NUMBER(USE_MM), SGNG_CD
+		        ) bb
+		WHERE aa.USE_MM = bb.USE_MM
+	
+	</select>
+	
+	<select id="getDongUsqnt" parameterType="DashBoardVO" resultType="AvgDataVO">
+	
+		SELECT 
+		    bb.STNDD_YR,
+		    bb.USE_MM,
+		    bb.SGNG_CD,
+		    bb.STDG_CD,
+		    ELRW_USQNT_avg,
+		    ELRW_USQNT,
+		    CTY_GAS_USQNT_avg,
+		    CTY_GAS_USQNT,
+		    SUM_NRG_USQNT_avg,
+		    SUM_NRG_USQNT
+		FROM (
+		           SELECT
+		                STNDD_YR,
+		                USE_MM,
+		                SGNG_CD,
+		                CEIL(AVG(ELRW_USQNT)/1000) as ELRW_USQNT_avg,  
+		                CEIL(AVG(CTY_GAS_USQNT)/1000) as CTY_GAS_USQNT_avg,
+		                CEIL(AVG(SUM_NRG_USQNT)/1000) as SUM_NRG_USQNT_avg 
+		            FROM(
+		                    SELECT 
+		                        STNDD_YR,
+		                        USE_MM,
+		                        a.SGNG_CD,
+		                        a.STDG_CD,
+		                        ROUND(SUM(ELRW_USQNT)) as ELRW_USQNT,  
+		                        ROUND(SUM(CTY_GAS_USQNT)) as CTY_GAS_USQNT,
+		                        ROUND(SUM(SUM_NRG_USQNT)) as SUM_NRG_USQNT 
+		                    FROM daejeon_energy1 a
+		                    WHERE STNDD_YR = #{stnddYr}
+		                    AND a.SGNG_CD = #{sgngCd}
+		                    GROUP BY STNDD_YR, USE_MM, a.SGNG_CD, a.STDG_CD
+		                    ORDER BY STNDD_YR, TO_NUMBER(USE_MM), SGNG_CD
+		                    )
+		            GROUP BY STNDD_YR, USE_MM, SGNG_CD
+		            ORDER BY STNDD_YR, TO_NUMBER(USE_MM)
+		        ) aa, (
+		            SELECT 
+		                STNDD_YR,
+		                USE_MM,
+		                a.SGNG_CD,
+		                STDG_CD,
+		                CEIL(SUM(ELRW_USQNT)/1000) as ELRW_USQNT,  
+		                CEIL(SUM(CTY_GAS_USQNT)/1000) as CTY_GAS_USQNT,
+		                CEIL(SUM(SUM_NRG_USQNT)/1000) as SUM_NRG_USQNT 
+		            FROM daejeon_energy1 a
+		            WHERE STNDD_YR = #{stnddYr}
+		            AND a.SGNG_CD = #{sgngCd}
+		            AND a.STDG_CD = #{stdgCd}
+		            GROUP BY STNDD_YR, USE_MM, a.SGNG_CD, STDG_CD
+		            ORDER BY STNDD_YR, TO_NUMBER(USE_MM), SGNG_CD
+		        ) bb
+		WHERE aa.USE_MM = bb.USE_MM
+	
+	</select>
+	
+	<select id="getDongDsamt" parameterType="DashBoardVO" resultType="AvgDataVO">
+	
+		SELECT 
+		    bb.STNDD_YR,
+		    bb.USE_MM,
+		    bb.SGNG_CD,
+		    bb.STDG_CD,
+		    ELRW_GRGS_DSAMT_avg,
+		    ELRW_GRGS_DSAMT,
+		    CTY_GAS_GRGS_DSAMT_avg,
+		    CTY_GAS_GRGS_DSAMT,
+		    SUM_GRGS_DSAMT_avg,
+		    SUM_GRGS_DSAMT
+		FROM (
+		           SELECT
+		                STNDD_YR,
+		                USE_MM,
+		                SGNG_CD,
+		                ROUND(AVG(ELRW_GRGS_DSAMT)) as ELRW_GRGS_DSAMT_avg,  
+		                ROUND(AVG(CTY_GAS_GRGS_DSAMT)) as CTY_GAS_GRGS_DSAMT_avg,
+		                ROUND(AVG(SUM_GRGS_DSAMT)) as SUM_GRGS_DSAMT_avg 
+		            FROM(
+		                    SELECT 
+		                        STNDD_YR,
+		                        USE_MM,
+		                        a.SGNG_CD,
+		                        a.STDG_CD,
+		                        ROUND(SUM(ELRW_GRGS_DSAMT)) as ELRW_GRGS_DSAMT,  
+		                        ROUND(SUM(CTY_GAS_GRGS_DSAMT)) as CTY_GAS_GRGS_DSAMT,
+		                        ROUND(SUM(SUM_GRGS_DSAMT)) as SUM_GRGS_DSAMT 
+		                    FROM daejeon_energy1 a
+		                    WHERE STNDD_YR = '2022'
+		                    AND a.SGNG_CD = '30170'
+		                    GROUP BY STNDD_YR, USE_MM, a.SGNG_CD, a.STDG_CD
+		                    ORDER BY STNDD_YR, TO_NUMBER(USE_MM), SGNG_CD
+		                    )
+		            GROUP BY STNDD_YR, USE_MM, SGNG_CD
+		            ORDER BY STNDD_YR, TO_NUMBER(USE_MM)
+		        ) aa, (
+		            SELECT 
+		                STNDD_YR,
+		                USE_MM,
+		                a.SGNG_CD,
+		                STDG_CD,
+		                ROUND(SUM(ELRW_GRGS_DSAMT)) as ELRW_GRGS_DSAMT,
+		                ROUND(SUM(CTY_GAS_GRGS_DSAMT)) as CTY_GAS_GRGS_DSAMT,
+		                ROUND(SUM(SUM_GRGS_DSAMT)) as SUM_GRGS_DSAMT
+		            FROM daejeon_energy1 a
+		            WHERE STNDD_YR = '2022'
+		            AND a.SGNG_CD = '30170'
+		            AND a.STDG_CD = '11200'
+		            GROUP BY STNDD_YR, USE_MM, a.SGNG_CD, STDG_CD
+		            ORDER BY STNDD_YR, TO_NUMBER(USE_MM), SGNG_CD
+		        ) bb
+		WHERE aa.USE_MM = bb.USE_MM
+	
+	</select>
+	
+</mapper>
+
+
+
+
+
+
+
+
+
+
+
