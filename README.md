@@ -1,4 +1,4 @@
-<h1> Baseball Diary </h1> 
+<h1> NEDproject </h1> 
 <h4> 제작의도 : 대전광역시 에너지 사용량과 온실가스 배출량 데이터 시각화 </h4>
 
 ![최종화면](https://github.com/user-attachments/assets/5f8d0bbb-f3db-4a09-b199-b7e53a06d26b)
